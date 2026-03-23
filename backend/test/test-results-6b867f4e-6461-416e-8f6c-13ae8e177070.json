@@ -1,0 +1,53 @@
+﻿[
+    {
+        "query":  "hello",
+        "timestamp":  "2026-01-03 19:25:20",
+        "response":  {
+                         "success":  true,
+                         "response":  "**Status:** Savings ₹50000 | Expenses ₹30000 | Surplus **₹20000**.\n\n**Market:** Nifty 50 at ~26,300. FMCG volatile; Bank/Auto bullish.\n\n**Plan:**\n- **Secure (50%):** RBI Bonds/FDs (8%+).\n- **Growth (30%):** Nifty Index Funds.\n- **Buffer (20%):** Liquid funds.\n\n*Risk exists. Verify rates.*",
+                         "metadata":  {
+                                          "timestamp":  "2026-01-03T13:55:20.724Z",
+                                          "userData":  {
+                                                           "savings":  50000,
+                                                           "expenses":  30000,
+                                                           "surplus":  20000
+                                                       },
+                                          "queryType":  "finance"
+                                      }
+                     }
+    },
+    {
+        "query":  "top 5 gains and loss in also 7 days",
+        "timestamp":  "2026-01-03 19:25:43",
+        "response":  {
+                         "success":  true,
+                         "response":  "**Status:** Savings ₹50000 | Expenses ₹30000 | Surplus **₹20000**.\n\n**Market:** Nifty 50 at ~26,300.",
+                         "metadata":  {
+                                          "timestamp":  "2026-01-03T13:55:43.294Z",
+                                          "userData":  {
+                                                           "savings":  50000,
+                                                           "expenses":  30000,
+                                                           "surplus":  20000
+                                                       },
+                                          "queryType":  "finance"
+                                      }
+                     }
+    },
+    {
+        "query":  "where can i invest my savings to gain more return also give me the risk percentage",
+        "timestamp":  "2026-01-03 19:26:05",
+        "response":  {
+                         "success":  true,
+                         "response":  "**Status:** Savings ₹50000 | Expenses ₹30000 | Surplus **₹20000**.\n\n**Market:** Nifty 50 at ~",
+                         "metadata":  {
+                                          "timestamp":  "2026-01-03T13:56:05.048Z",
+                                          "userData":  {
+                                                           "savings":  50000,
+                                                           "expenses":  30000,
+                                                           "surplus":  20000
+                                                       },
+                                          "queryType":  "finance"
+                                      }
+                     }
+    }
+]

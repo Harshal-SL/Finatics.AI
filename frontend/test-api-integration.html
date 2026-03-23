@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+        .success { background: #1a5f1a; border: 1px solid #2d8f2d; }
+        .error { background: #5f1a1a; border: 1px solid #8f2d2d; }
+        .loading { background: #5f5f1a; border: 1px solid #8f8f2d; }
+        pre { 
+            background: #1a1a1a; 
+            padding: 15px; 
+            border-radius: 4px; 
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 API Integration Test</h1>
+    <p>Testing frontend-backend integration for Dashboard APIs</p>
+
+    <div class="test-section">
+        <h2>Configuration</h2>
+        <label>User ID: <input type="text" id="userId" value="6b867f4e-6461-416e-8f6c-13ae8e177070" style="width: 400px; padding: 5px; background: #1a1a1a; color: #fff; border: 1px solid #444; border-radius: 4px;"></label>
+        <br><br>
+        <button onclick="testAllAPIs()">🚀 Test All APIs</button>
+        <button onclick="testBankAccounts()">🏦 Test Bank Accounts</button>
+        <button onclick="testDashboard()">📊 Test Dashboard</button>
+        <button onclick="testInvestments()">💰 Test Investments</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+
+        function showLoading(section, message) {
+            document.getElementById('results').innerHTML += `
+                <div class="test-section">
+                    <h3>${section}</h3>
+                    <div class="status loading">${message}</div>
+                </div>
+            `;
+        }
+
+        function showResult(section, success, data, error = null) {
+            const statusClass = success ? 'success' : 'error';
+            const statusText = success ? '✅ SUCCESS' : '❌ ERROR';
+            
+            document.getElementById('results').innerHTML += `
+                <div class="test-section">
+                    <h3>${section}</h3>
+                    <div class="status ${statusClass}">
+                        <strong>${statusText}</strong>
+                    </div>
+                    ${error ? `<div class="status error"><strong>Error:</strong> ${error}</div>` : ''}
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        async function testBankAccounts() {
+            const userId = document.getElementById('userId').value;
+            const section = '🏦 Bank Accounts API';
+            
+            try {
+                showLoading(section, 'Fetching bank accounts...');
+                const response = await fetch(`${API_BASE}/api/bank-accounts/${userId}`);
+                const data = await response.json();
+                
+                console.log('Bank Accounts Response:', data);
+                showResult(section, data.success, {
+                    status: response.status,
+                    success: data.success,
+                    dataCount: data.data?.length || 0,
+                    data: data.data
+                });
+            } catch (error) {
+                console.error('Bank Accounts Error:', error);
+                showResult(section, false, null, error.message);
+            }
+        }
+
+        async function testDashboard() {
+            const userId = document.getElementById('userId').value;
+            const section = '📊 Dashboard API';
+            
+            try {
+                showLoading(section, 'Fetching dashboard data...');
+                const response = await fetch(`${API_BASE}/api/dashboard?userId=${userId}`);
+                const data = await response.json();
+                
+                console.log('Dashboard Response:', data);
+                showResult(section, data.success, {
+                    status: response.status,
+                    success: data.success,
+                    accountBalance: data.data?.account_balance,
+                    monthlyExpenses: data.data?.monthly_expenses,
+                    monthlySavings: data.data?.monthly_savings,
+                    linkedAccountsCount: data.data?.linked_accounts_count,
+                    recentTransactionsCount: data.data?.recent_transactions?.length || 0
+                });
+            } catch (error) {
+                console.error('Dashboard Error:', error);
+                showResult(section, false, null, error.message);
+            }
+        }
+
+        async function testInvestments() {
+            const userId = document.getElementById('userId').value;
+            const section = '💰 Investments API';
+            
+            try {
+                showLoading(section, 'Fetching investment data...');
+                const response = await fetch(`${API_BASE}/api/investments?userId=${userId}`);
+                const data = await response.json();
+                
+                console.log('Investments Response:', data);
+                showResult(section, data.success, {
+                    status: response.status,
+                    success: data.success,
+                    totalInvestments: data.data?.totalInvestments,
+                    stocksValue: data.data?.stocks?.totalValue,
+                    mutualFundsValue: data.data?.mutualFunds?.totalValue,
+                    fixedDepositsValue: data.data?.fixedDeposits?.totalValue
+                });
+            } catch (error) {
+                console.error('Investments Error:', error);
+                showResult(section, false, null, error.message);
+            }
+        }
+
+        async function testAllAPIs() {
+            document.getElementById('results').innerHTML = '';
+            await testBankAccounts();
+            await testDashboard();
+            await testInvestments();
+        }
+
+        // Auto-run on page load
+        window.addEventListener('load', () => {
+            console.log('API Integration Test Page Loaded');
+        });
+    </script>
+</body>
+</html>

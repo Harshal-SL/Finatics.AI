@@ -1,0 +1,13 @@
+﻿{
+    "success":  true,
+    "response":  "**Status:** Savings ₹500",
+    "metadata":  {
+                     "timestamp":  "2026-01-03T13:36:47.357Z",
+                     "userData":  {
+                                      "savings":  50000,
+                                      "expenses":  30000,
+                                      "surplus":  20000
+                                  },
+                     "queryType":  "finance"
+                 }
+}
