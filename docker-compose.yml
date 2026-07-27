@@ -41,8 +41,6 @@ services:
         VITE_API_URL: http://localhost:3000/api
         VITE_FRONTEND_URL: http://localhost:4173
         VITE_PAYPAL_CLIENT_ID: ${VITE_PAYPAL_CLIENT_ID:-}
-        VITE_ALCHEMY_API_KEY: ${VITE_ALCHEMY_API_KEY:-}
-        VITE_ALCHEMY_RPC_URL: ${VITE_ALCHEMY_RPC_URL:-}
     env_file:
       - ./frontend/.env
     container_name: finatics-frontend
