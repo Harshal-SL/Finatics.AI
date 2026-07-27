@@ -1,3 +1,4 @@
+import API_BASE_URL from "@/lib/api";
 import { BentoGrid } from "@/components/ui/bento-grid";
 import { Button } from "@/components/ui/button";
 import { Particles } from "@/components/ui/particles";
@@ -99,10 +100,10 @@ const Dashboard = () => {
         // Fetch all 3 APIs in parallel using Promise.all
         console.log('Dashboard: Fetching from 3 APIs...');
         const [bankAccountsRes, dashboardRes, investmentRes, holdingsRes] = await Promise.all([
-          fetch(`http://localhost:3000/api/bank-accounts/${user.id}`),
-          fetch(`http://localhost:3000/api/dashboard?userId=${user.id}`),
-          fetch(`http://localhost:3000/api/investments?userId=${user.id}`),
-          fetch(`http://localhost:3000/api/holdings/user/${user.id}`)
+          fetch(`${API_BASE_URL}/bank-accounts/${user.id}`),
+          fetch(`${API_BASE_URL}/dashboard?userId=${user.id}`),
+          fetch(`${API_BASE_URL}/investments?userId=${user.id}`),
+          fetch(`${API_BASE_URL}/holdings/user/${user.id}`)
         ]);
 
         console.log('Dashboard: API responses received', {

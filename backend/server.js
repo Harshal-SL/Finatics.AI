@@ -32,7 +32,9 @@ const port = process.env.PORT || 3000;
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:5173',
-  'http://localhost:5174'
+  'http://localhost:5174',
+  'http://localhost:4173',
+  'https://finatics-ai.vercel.app'
 ].filter(Boolean);
 
 app.use(cors({

@@ -1,0 +1,45 @@
+services:
+
+  # ── Backend (Express API) ─────────────────────────────────────────────────────
+  - type: web
+    name: finatics-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: BANKING_DB_URL
+        sync: false
+      - key: BANKING_DB_ANON_KEY
+        sync: false
+      - key: APP_DB_URL
+        sync: false
+      - key: APP_DB_ANON_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_CHATBOT_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false   # Set this to your Render frontend URL after deploy
+
+  # ── Frontend (Vite + Node preview) ───────────────────────────────────────────
+  - type: web
+    name: finatics-frontend
+    runtime: docker
+    rootDir: frontend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    buildArgs:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_API_URL
+        sync: false   # Set to your backend Render URL e.g. https://finatics-backend.onrender.com/api
+      - key: VITE_PAYPAL_CLIENT_ID
+        sync: false

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import API_BASE_URL from "@/lib/api";
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,7 +74,7 @@ const AddBankAccount = () => {
       console.log('Sending bank account data to backend:', bankAccountPayload);
 
       // Call the backend API
-      const response = await fetch('http://localhost:3000/api/bank-accounts/add-account', {
+      const response = await fetch(`${API_BASE_URL}/bank-accounts/add-account`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

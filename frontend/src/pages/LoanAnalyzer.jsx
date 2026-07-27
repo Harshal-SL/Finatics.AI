@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import API_BASE_URL from "@/lib/api";
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -151,7 +152,7 @@ const LoanAnalyzer = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3000/api/loan-analyzer', {
+      const response = await fetch(`${API_BASE_URL}/loan-analyzer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

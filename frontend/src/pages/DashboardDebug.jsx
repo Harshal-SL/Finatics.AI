@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
+import API_BASE_URL from "@/lib/api";
 
 const DashboardDebug = () => {
   const { user } = useAuth();
@@ -17,7 +18,7 @@ const DashboardDebug = () => {
 
       // Test Bank Accounts
       try {
-        const res = await fetch(`http://localhost:3000/api/bank-accounts/${user.id}`);
+        const res = await fetch(`${API_BASE_URL}/bank-accounts/${user.id}`);
         const data = await res.json();
         setApiTests(prev => ({ ...prev, bankAccounts: { status: res.status, data } }));
       } catch (error) {
@@ -26,7 +27,7 @@ const DashboardDebug = () => {
 
       // Test Dashboard
       try {
-        const res = await fetch(`http://localhost:3000/api/dashboard?userId=${user.id}`);
+        const res = await fetch(`${API_BASE_URL}/dashboard?userId=${user.id}`);
         const data = await res.json();
         setApiTests(prev => ({ ...prev, dashboard: { status: res.status, data } }));
       } catch (error) {
@@ -35,7 +36,7 @@ const DashboardDebug = () => {
 
       // Test Investments
       try {
-        const res = await fetch(`http://localhost:3000/api/investments?userId=${user.id}`);
+        const res = await fetch(`${API_BASE_URL}/investments?userId=${user.id}`);
         const data = await res.json();
         setApiTests(prev => ({ ...prev, investments: { status: res.status, data } }));
       } catch (error) {
