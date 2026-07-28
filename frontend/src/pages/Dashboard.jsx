@@ -75,30 +75,16 @@ const Dashboard = () => {
   // Check if user has bank accounts (from dashboard data OR bank accounts list)
   const hasBankAccounts = (dashboardData?.linked_accounts_count > 0) || (bankAccounts.length > 0);
 
-  console.log('Dashboard State:', {
-    userId: user?.id,
-    isLoadingAccounts,
-    isLoadingDashboard,
-    bankAccountsCount: bankAccounts.length,
-    linkedAccountsCount: dashboardData?.linked_accounts_count,
-    hasBankAccounts,
-    accountBalance: dashboardData?.account_balance,
-    monthlyExpenses: dashboardData?.monthly_expenses
-  });
-
   // Fetch all data in parallel for better performance
   useEffect(() => {
     const fetchAllData = async () => {
       if (!user?.id) {
-        console.log('Dashboard: No user ID, skipping fetch');
         return;
       }
       
       console.log('Dashboard: Starting data fetch for user:', user.id);
       
       try {
-        // Fetch all 3 APIs in parallel using Promise.all
-        console.log('Dashboard: Fetching from 3 APIs...');
         const [bankAccountsRes, dashboardRes, investmentRes, holdingsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/bank-accounts/${user.id}`),
           fetch(`${API_BASE_URL}/dashboard?userId=${user.id}`),
@@ -113,22 +99,6 @@ const Dashboard = () => {
           holdings: holdingsRes.status
         });
 
-        // Check for HTTP errors
-        if (!bankAccountsRes.ok) {
-          console.error('Bank accounts API error:', bankAccountsRes.status);
-        }
-        if (!dashboardRes.ok) {
-          console.error('Dashboard API error:', dashboardRes.status);
-        }
-        if (!investmentRes.ok) {
-          console.error('Investments API error:', investmentRes.status);
-        }
-        if (!holdingsRes.ok) {
-          console.error('Holdings API error:', holdingsRes.status);
-        }
-
-        // Parse all responses in parallel
-        console.log('Dashboard: Parsing JSON responses...');
         const [bankAccountsData, dashboardData, investmentsData, holdingsData] = await Promise.all([
           bankAccountsRes.json(),
           dashboardRes.json(),
@@ -136,60 +106,25 @@ const Dashboard = () => {
           holdingsRes.json()
         ]);
 
-        console.log('Dashboard: Data parsed successfully', {
-          bankAccountsSuccess: bankAccountsData.success,
-          dashboardSuccess: dashboardData.success,
-          investmentSuccess: investmentsData.success,
-          holdingsSuccess: holdingsData.success
-        });
-
-        // Set bank accounts
         if (bankAccountsData.success) {
-          console.log('Dashboard: Setting bank accounts', bankAccountsData.data?.length || 0, 'accounts');
           setBankAccounts(bankAccountsData.data || []);
-        } else {
-          console.error('Failed to fetch bank accounts:', bankAccountsData.error);
         }
 
-        // Set dashboard data
         if (dashboardData.success) {
-          console.log('Dashboard: Setting dashboard data', {
-            balance: dashboardData.data?.account_balance,
-            linkedAccounts: dashboardData.data?.linked_accounts_count
-          });
           setDashboardData(dashboardData.data);
-        } else {
-          console.error('Failed to fetch dashboard data:', dashboardData.error);
         }
 
-        // Set investment data
         if (investmentsData.success) {
-          console.log('✅ Dashboard: Setting investment data', {
-            total: investmentsData.data?.totalInvestments,
-            stocks: investmentsData.data?.stocks?.totalValue,
-            mutualFunds: investmentsData.data?.mutualFunds?.totalValue,
-            fixedDeposits: investmentsData.data?.fixedDeposits?.totalValue,
-            fullData: investmentsData.data
-          });
           setInvestmentData(investmentsData.data);
-          console.log('✅ Investment data state set, should re-render now');
-        } else {
-          console.error('❌ Failed to fetch investment data:', investmentsData.error);
         }
 
-        // Extract customer name from holdings data (same as Stocks page)
         if (holdingsData.success && holdingsData.data?.customer?.full_name) {
           setUserProfile({ full_name: holdingsData.data.customer.full_name });
-          console.log('Dashboard: Customer name from holdings:', holdingsData.data.customer.full_name);
         }
 
-        console.log('Dashboard: All data set successfully');
-
       } catch (error) {
-        console.error('🚨 Dashboard: CRITICAL ERROR in fetchAllData:', error);
-        console.error('Error stack:', error.stack);
+        // silently fail — empty states are shown in the UI
       } finally {
-        console.log('Dashboard: Fetch complete, setting loading states to false');
         setIsLoadingAccounts(false);
         setIsLoadingDashboard(false);
         setIsLoadingInvestments(false);
@@ -209,24 +144,6 @@ const Dashboard = () => {
     stocks: investmentData?.stocks?.totalValue || 0,
     totalInvestments: investmentData?.totalInvestments || 0
   };
-
-  console.log('🔍 Dashboard Render - accountData composition:', {
-    investmentDataExists: !!investmentData,
-    investmentData_totalInvestments: investmentData?.totalInvestments,
-    investmentData_stocks: investmentData?.stocks?.totalValue,
-    investmentData_mutualFunds: investmentData?.mutualFunds?.totalValue,
-    investmentData_fixedDeposits: investmentData?.fixedDeposits?.totalValue,
-    accountData_totalInvestments: accountData.totalInvestments,
-    accountData_stocks: accountData.stocks,
-    accountData_mutualFunds: accountData.mutualFunds,
-    accountData_monthlyExpenses: accountData.monthlyExpenses,
-    accountData_monthlySavings: accountData.monthlySavings,
-    accountData_monthlyIncome: accountData.monthlyIncome,
-    dashboardData_summary: dashboardData?.monthly_savings_summary,
-    isLoadingInvestments,
-    isLoadingAccounts,
-    isLoadingDashboard
-  });
 
   // Use real transactions from API or empty array
   const recentTransactions = dashboardData?.recent_transactions?.map(txn => ({
@@ -313,7 +230,6 @@ const Dashboard = () => {
 
   // Safety check - if something is critically wrong, show error UI
   if (!user) {
-    console.error('Dashboard: No user found in context!');
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -329,8 +245,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  console.log('Dashboard: About to render, all checks passed');
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -404,7 +318,6 @@ const Dashboard = () => {
                 size="default"
                 className="font-semibold flex items-center gap-2 shrink-0"
                 onClick={() => {
-                  console.log('Button clicked!');
                   navigate('/add-bank-account');
                 }}
               >

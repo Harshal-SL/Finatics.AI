@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api') + '/goals';
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/$/, '') + '/goals';
 
 export async function fetchGoals(userId) {
   const res = await axios.get(`${BASE_URL}`, { params: { userId } });

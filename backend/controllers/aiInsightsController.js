@@ -6,8 +6,6 @@ const { getMarketInsights } = require('../services/ai/geminiService');
  */
 const getAIInsights = async (req, res, next) => {
   try {
-    console.log('📊 Fetching AI market insights...');
-
     const insights = await getMarketInsights();
 
     res.json({
@@ -26,7 +24,6 @@ const getAIInsights = async (req, res, next) => {
     });
 
   } catch (error) {
-    console.error('Error in getAIInsights:', error);
     next(error);
   }
 };

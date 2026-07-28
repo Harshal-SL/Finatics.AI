@@ -6,22 +6,11 @@
 
 /**
  * Request Logger Middleware
- * Logs incoming requests with timestamp, method, URL, and parameters
+ * Logs incoming requests with timestamp, method, URL
  */
 const requestLogger = (req, res, next) => {
   const timestamp = new Date().toISOString();
   console.log(`[${timestamp}] ${req.method} ${req.originalUrl}`);
-  
-  // Log request body for POST/PUT requests
-  if (req.body && Object.keys(req.body).length > 0) {
-    console.log('Request Body:', JSON.stringify(req.body, null, 2));
-  }
-  
-  // Log query parameters for GET requests
-  if (req.query && Object.keys(req.query).length > 0) {
-    console.log('Query Params:', JSON.stringify(req.query, null, 2));
-  }
-  
   next();
 };
 

@@ -66,7 +66,6 @@ async function getMarketInsights() {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      console.warn('GEMINI_API_KEY not configured, using fallback insights');
       return getFallbackInsights();
     }
 
@@ -135,9 +134,7 @@ async function getMarketInsights() {
       }
     };
 
-    console.log('🤖 Calling Gemini AI for market insights...');
-    console.log('📅 Analysis timestamp:', timestamp);
-    console.log('📆 Week ending:', weekEndingDate);
+    console.log(`[AI Insights] Calling Gemini for week ending: ${weekEndingDate}`);
 
     const url = `${GCP_GEMINI_BASE}/models/gemini-1.5-flash-latest:generateContent?key=${encodeURIComponent(apiKey)}`;
     const response = await fetch(url, {
@@ -147,29 +144,21 @@ async function getMarketInsights() {
     });
 
     if (!response.ok) {
-      const errorText = await response.text().catch(() => '');
-      console.error('❌ Gemini API Error:', response.status, errorText);
       return getFallbackInsights();
     }
 
     const data = await response.json();
 
     if (!data || !data.candidates || data.candidates.length === 0) {
-      console.error('❌ No response from Gemini AI');
       return getFallbackInsights();
     }
 
     const candidate = data.candidates[0];
     if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
-      console.error('❌ Invalid response structure from Gemini AI');
       return getFallbackInsights();
     }
 
     const aiResponse = JSON.parse(candidate.content.parts[0].text);
-    
-    console.log('✅ Successfully received AI insights');
-    console.log(`📊 Analysis for week ending: ${aiResponse.analysis_week_ending}`);
-    console.log(`💡 Insights count: ${aiResponse.insights?.length || 0}`);
 
     return {
       success: true,
@@ -181,7 +170,6 @@ async function getMarketInsights() {
     };
 
   } catch (error) {
-    console.error('❌ Error fetching Gemini AI insights:', error.message);
     return getFallbackInsights();
   }
 }

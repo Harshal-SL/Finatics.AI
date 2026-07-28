@@ -177,20 +177,13 @@ const Login = () => {
     }
     
     console.log('=== SIGNUP PROCESS START ===');
-    console.log('SignUp: Email:', email);
-    console.log('SignUp: Current URL before signup:', window.location.href);
     
     try {
       const { data, error } = await signUp(email, password, {
         full_name: fullName
       });
       
-      console.log('SignUp: Supabase response received');
-      console.log('SignUp: Error:', error?.message || 'None');
-      console.log('SignUp: User created:', !!data?.user);
-      
       if (error) {
-        console.log('SignUp: Handling error case');
         setError(error.message);
       } else if (data?.user) {
         console.log('SignUp: SUCCESS - User created:', data.user.email);

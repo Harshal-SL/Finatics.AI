@@ -16,8 +16,6 @@ const Transactions = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
-  
-  console.log('Transactions component rendered', { user: user?.email || 'No user' });
   const [pendingPayments, setPendingPayments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -81,7 +79,6 @@ const Transactions = () => {
                 setIsProcessing(true);
                 try {
                   const details = await actions.order.capture();
-                  console.log('PayPal transaction completed:', details);
 
                   // Insert transaction into Supabase
                   const transactionRes = await supabase.from('transactions').insert([{
@@ -114,14 +111,12 @@ const Transactions = () => {
                   setSelectedPayment(null);
                   await fetchData();
                 } catch (err) {
-                  console.error('Supabase error:', err);
                   toast.error(err.message || 'Payment save failed');
                 } finally {
                   setIsProcessing(false);
                 }
               },
               onError: (err) => {
-                console.error('PayPal error:', err);
                 toast.error('PayPal payment failed');
                 setIsProcessing(false);
               },
@@ -167,7 +162,6 @@ const Transactions = () => {
       setTransactions(transactionsRes.data || []);
       setPendingPayments(paymentsRes.data || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
       toast.error('Failed to load data');
     } finally {
       setIsLoading(false);
@@ -240,7 +234,6 @@ const Transactions = () => {
       });
       fetchData();
     } catch (error) {
-      console.error('Error adding payment:', error);
       toast.error('Failed to add payment');
     } finally {
       setIsAddingPayment(false);
@@ -268,7 +261,6 @@ const Transactions = () => {
       toast.success('Payment deleted successfully');
       fetchData();
     } catch (error) {
-      console.error('Error deleting payment:', error);
       toast.error('Failed to delete payment');
     }
   };

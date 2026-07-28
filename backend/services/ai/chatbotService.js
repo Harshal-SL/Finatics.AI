@@ -132,7 +132,6 @@ Provide a helpful, specific response to their question:`;
       }
     } catch (error) {
       lastErrorText = `Network error: ${error.message}`;
-      console.error(`Error with model ${model}:`, error);
       continue;
     }
   }
