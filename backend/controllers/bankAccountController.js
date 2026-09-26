@@ -108,16 +108,23 @@ const addBankAccount = async (req, res) => {
       console.error('Error with banking database operations:', bankingDbError);
     }
 
-    // Check if account is already linked to user
+    // Helper to test if a string is a valid UUID
+    const isUUID = (str) =>
+      typeof str === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+
+    // linkedbankaccounts table schema requires account_number to be a UUID
+    const linkedAccountUUID = isUUID(account_number) ? account_number : uuidv4();
+
+    // Check if user already has a linked account in application database
     const { data: existingLink } = await appDb
       .from('linkedbankaccounts')
       .select('*')
       .eq('user_id', userid)
-      .eq('account_number', actualAccountNumber)
       .maybeSingle();
 
     if (existingLink) {
-      console.log('✅ Account already linked for user:', actualAccountNumber);
+      console.log('✅ Account already linked for user:', existingLink.account_number);
       return res.status(200).json({
         success: true,
         message: 'Bank account already linked successfully',
@@ -128,7 +135,7 @@ const addBankAccount = async (req, res) => {
     // Prepare bank account data according to the schema
     const bankAccountData = {
       user_id: userid,
-      account_number: actualAccountNumber,
+      account_number: linkedAccountUUID,
       ifsc_code: ifsc_code.toUpperCase(),
       account_type: account_type.toLowerCase(),
       bank_name: bank_name
