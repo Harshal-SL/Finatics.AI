@@ -1,0 +1,29 @@
+name: Supabase & Render 4-Day Keep-Alive
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every 4 days (on days 1, 5, 9, 13, 17, 21, 25, 29 of the month)
+    - cron: '0 0 */4 * *'
+  workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab
+
+jobs:
+  poll-databases:
+    name: Poll Supabase Databases via Health Endpoint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Finatics Backend & Refresh Supabase Activity
+        run: |
+          echo "Pinging Finatics.AI backend health endpoint to poll databases..."
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" --max-time 60 "https://finatics-ai.onrender.com/health")
+          HTTP_BODY=$(echo "$RESPONSE" | sed -e '$d')
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+
+          echo "Response Status: $HTTP_STATUS"
+          echo "Response Body:"
+          echo "$HTTP_BODY"
+
+          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 207 ]; then
+            echo "✅ Successfully polled both Supabase databases and refreshed activity!"
+          else
+            echo "⚠️ Health check returned status $HTTP_STATUS"
+          fi

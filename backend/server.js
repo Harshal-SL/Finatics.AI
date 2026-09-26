@@ -23,6 +23,7 @@ const aiInsightsRoutes = require('./routes/aiInsights');
 const newsRoutes = require('./routes/news');
 const adminRoutes = require('./routes/admin');
 const chatbotRoutes = require('./routes/chatbot');
+const { checkDatabaseHealth, startKeepAliveScheduler } = require('./services/healthService');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -99,17 +100,24 @@ app.use('/api/news', newsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    databases: {
-      banking: 'Connected',
-      application: 'Connected'
-    }
-  });
+// Enhanced Health check & Supabase Keep-Alive endpoint (polls both databases with active read requests)
+app.get(['/health', '/api/health'], async (req, res) => {
+  try {
+    const healthData = await checkDatabaseHealth();
+    const statusCode = healthData.status === 'OK' ? 200 : 207;
+    res.status(statusCode).json({
+      status: healthData.status,
+      uptime: process.uptime(),
+      ...healthData
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      message: 'Failed to poll databases',
+      error: error.message
+    });
+  }
 });
 
 // Global Error Handling (must be last)
@@ -120,6 +128,9 @@ app.use(errorHandler);
 const server = app.listen(port, () => {
   console.log(`Finatics.AI Backend server running on port ${port}`);
   console.log(`Dashboard API available at http://localhost:${port}/api/dashboard`);
+  
+  // Start background database keep-alive polling (every 4 days)
+  startKeepAliveScheduler(4);
 });
 
 // Prevent the server from exiting
