@@ -32,8 +32,7 @@ import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
 import TradingViewWidget from "@/components/TradingViewWidget";
 import PortfolioPerformanceChart from "@/components/PortfolioPerformanceChart";
 import { OrbitalLoader } from "@/components/ui/orbital-loader";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import API_BASE_URL from "@/lib/api";
 
 const Stocks = () => {
   const { user, isAuthenticated, signOut } = useAuth();

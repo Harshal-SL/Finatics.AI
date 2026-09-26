@@ -41,15 +41,38 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps, Postman, or same-origin)
     if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+      return callback(null, true);
     }
+    try {
+      const hostname = new URL(origin).hostname;
+      if (hostname.endsWith('.onrender.com') || hostname.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+    } catch (e) {
+      // Ignore URL parse error
+    }
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Normalize URL path to collapse duplicate slashes (e.g., /api//goals -> /api/goals)
+app.use((req, res, next) => {
+  if (req.url && req.url.includes('//')) {
+    const qIndex = req.url.indexOf('?');
+    if (qIndex !== -1) {
+      const path = req.url.slice(0, qIndex).replace(/\/+/g, '/');
+      const query = req.url.slice(qIndex);
+      req.url = path + query;
+    } else {
+      req.url = req.url.replace(/\/+/g, '/');
+    }
+  }
+  next();
+});
+
 app.use(requestLogger);
 
 // Test route
@@ -65,6 +88,7 @@ app.get('/', (req, res) => {
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/loan-analyzer', loanAnalyzerRoutes);
 app.use('/api/goals', goalRoutes);
+app.use('/goals', goalRoutes); // Alias for backward compatibility
 app.use('/api/users', userRoutes);
 app.use('/api/bank-accounts', bankAccountRoutes);
 app.use('/api/transactions', transactionRoutes);

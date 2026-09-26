@@ -4,6 +4,7 @@ import { Send, Bot, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
+import API_BASE_URL from '@/lib/api';
 import { Particles } from '@/components/ui/particles';
 import {
   ExpandableChat,
@@ -151,7 +152,7 @@ const FinanceChatbot = () => {
     setIsLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      const apiUrl = API_BASE_URL;
       
       // Call the new chatbot API endpoint
       const response = await axios.post(`${apiUrl}/chatbot/query`, {

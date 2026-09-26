@@ -17,6 +17,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '@/lib/api';
 
 const parseCurrencyNumber = (value) => {
   if (typeof value === 'number') {
@@ -262,7 +263,7 @@ const Goals = () => {
     description: ''
   });
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const API_URL = API_BASE_URL;
 
   // For testing: Use hardcoded user ID if no authenticated user
   const TEST_USER_ID = '6b867f4e-6461-416e-8f6c-13ae8e177070';
