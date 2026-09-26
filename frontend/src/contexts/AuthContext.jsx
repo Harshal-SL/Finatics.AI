@@ -3,6 +3,19 @@ import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext();
 
+const getAppRedirectUrl = () => {
+  if (import.meta.env.VITE_FRONTEND_URL) {
+    return import.meta.env.VITE_FRONTEND_URL.replace(/\/+$/, '');
+  }
+  if (typeof window !== 'undefined' && window.location.origin) {
+    if (window.location.origin.includes('vercel.app') || window.location.origin.includes('finatics-ai')) {
+      return 'https://finatics-ai.vercel.app';
+    }
+    return window.location.origin.replace(/\/+$/, '');
+  }
+  return 'https://finatics-ai.vercel.app';
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -102,11 +115,13 @@ export const AuthProvider = ({ children }) => {
   const signUp = async (email, password, userData = {}) => {
     try {
       console.log('AuthContext: Starting sign up for:', email);
+      const appUrl = getAppRedirectUrl();
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: userData // Additional user metadata
+          data: userData, // Additional user metadata
+          emailRedirectTo: `${appUrl}/`
         }
       });
 
@@ -193,8 +208,9 @@ export const AuthProvider = ({ children }) => {
   // Reset password
   const resetPassword = async (email) => {
     try {
+      const appUrl = getAppRedirectUrl();
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
+        redirectTo: `${appUrl}/reset-password`
       });
 
       if (error) throw error;
@@ -225,9 +241,13 @@ export const AuthProvider = ({ children }) => {
   // Email verification functions
   const resendConfirmation = async (email) => {
     try {
+      const appUrl = getAppRedirectUrl();
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email: email
+        email: email,
+        options: {
+          emailRedirectTo: `${appUrl}/`
+        }
       });
       return { error };
     } catch (error) {
