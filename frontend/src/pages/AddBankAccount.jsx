@@ -18,7 +18,8 @@ import {
   Shield,
   Plus,
   Check,
-  AlertCircle
+  AlertCircle,
+  Star
 } from "lucide-react";
 
 const AddBankAccount = () => {
@@ -27,34 +28,43 @@ const AddBankAccount = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedBank, setSelectedBank] = useState('');
+  const [selectedBank, setSelectedBank] = useState('icici');
   const [accountData, setAccountData] = useState({
-    bankName: '',
-    accountNumber: '',
-    routingNumber: '', // IFSC code
-    accountType: ''
+    bankName: 'ICICI Bank',
+    accountNumber: '5893143322',
+    routingNumber: 'IFSC3289', // IFSC code
+    accountType: 'savings'
   });
 
-  // Popular Indian banks
+  // Popular Indian banks - ICICI Bank set as default link
   const popularBanks = [
+    { id: 'icici', name: 'ICICI Bank', logo: '🏦', isDefault: true },
     { id: 'hdfc', name: 'HDFC Bank', logo: '🏛️' },
     { id: 'axis', name: 'Axis Bank', logo: '🏢' },
-    { id: 'icici', name: 'ICICI Bank', logo: '�' },
     { id: 'sbi', name: 'State Bank of India', logo: '🏦' },
-    { id: 'kotak', name: 'Kotak Mahindra Bank', logo: '�' },
-    { id: 'other', name: 'Other Bank', logo: '🏦' }
+    { id: 'kotak', name: 'Kotak Mahindra Bank', logo: '🏬' },
+    { id: 'other', name: 'Other Bank', logo: '➕' }
   ];
 
   const handleBankSelect = (bank) => {
     setSelectedBank(bank.id);
-    setAccountData({ ...accountData, bankName: bank.name });
+    if (bank.id === 'icici') {
+      setAccountData({
+        bankName: 'ICICI Bank',
+        accountNumber: '5893143322',
+        routingNumber: 'IFSC3289',
+        accountType: 'savings'
+      });
+    } else {
+      setAccountData(prev => ({ ...prev, bankName: bank.name }));
+    }
     if (bank.id !== 'other') {
       setCurrentStep(2);
     }
   };
 
   const handleInputChange = (field, value) => {
-    setAccountData({ ...accountData, [field]: value });
+    setAccountData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -62,11 +72,14 @@ const AddBankAccount = () => {
     setIsLoading(true);
     setError(null);
 
+    const effectiveUserId = user?.id || '6b867f4e-6461-416e-8f6c-13ae8e177070';
+
     try {
       // Prepare the data to send to the backend
       const bankAccountPayload = {
-        userid: user.id, // Backend expects 'userid'
+        userid: effectiveUserId, // Backend expects 'userid'
         bank_name: accountData.bankName,
+        account_number: accountData.accountNumber,
         ifsc_code: accountData.routingNumber, // IFSC code
         account_type: accountData.accountType
       };
@@ -78,7 +91,7 @@ const AddBankAccount = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-ID': user.id // Send user ID in header for auth
+          'X-User-ID': effectiveUserId // Send user ID in header for auth
         },
         body: JSON.stringify(bankAccountPayload)
       });
@@ -99,7 +112,7 @@ const AddBankAccount = () => {
         throw new Error(result.error || 'Unknown error occurred');
       }
     } catch (err) {
-      setError('Failed to add bank account. Please try again.');
+      setError(err.message || 'Failed to add bank account. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -191,26 +204,51 @@ const AddBankAccount = () => {
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Select Your Bank</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {popularBanks.map((bank) => (
-                      <button
-                        key={bank.id}
-                        onClick={() => handleBankSelect(bank)}
-                        className={`p-4 border-2 rounded-lg transition-all hover:border-primary/50 hover:bg-primary/5 ${
-                          selectedBank === bank.id 
-                            ? 'border-primary bg-primary/10' 
-                            : 'border-border bg-background'
-                        }`}
-                      >
-                        <div className="text-2xl mb-2">{bank.logo}</div>
-                        <div className="text-sm font-medium text-foreground">{bank.name}</div>
-                      </button>
-                    ))}
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-foreground">Select Your Bank</h3>
+                    <span className="text-xs text-muted-foreground">ICICI Bank is highlighted as default link</span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {popularBanks.map((bank) => {
+                      const isSelected = selectedBank === bank.id;
+                      const isIcici = bank.id === 'icici';
+                      return (
+                        <button
+                          key={bank.id}
+                          type="button"
+                          onClick={() => handleBankSelect(bank)}
+                          className={`relative p-5 border-2 rounded-2xl transition-all duration-200 text-left hover:scale-[1.02] cursor-pointer ${
+                            isIcici
+                              ? 'border-primary bg-primary/15 shadow-[0_0_25px_rgba(255,255,255,0.18)] ring-2 ring-primary/50'
+                              : isSelected
+                                ? 'border-primary bg-primary/10'
+                                : 'border-border/60 bg-background/60 hover:border-primary/40 hover:bg-primary/5'
+                          }`}
+                        >
+                          {isIcici && (
+                            <span className="absolute -top-3 right-3 bg-white text-black text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-md flex items-center gap-1">
+                              <Star className="w-3 h-3 fill-black text-black" /> Default Link
+                            </span>
+                          )}
+                          <div className="text-3xl mb-2">{bank.logo}</div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-base font-semibold text-foreground">{bank.name}</span>
+                            {isSelected && (
+                              <span className="w-5 h-5 rounded-full bg-primary text-black flex items-center justify-center text-xs font-bold shadow">
+                                ✓
+                              </span>
+                            )}
+                          </div>
+                          {isIcici && (
+                            <p className="text-xs text-white/70 mt-1 font-medium">Pre-configured with demo financial data</p>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {selectedBank === 'other' && (
+                {selectedBank === 'other' ? (
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="customBank">Bank Name</Label>
@@ -229,20 +267,43 @@ const AddBankAccount = () => {
                       Continue
                     </AnimatedButton>
                   </div>
+                ) : (
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(2)}
+                      className="w-full h-12 bg-white text-black rounded-xl font-semibold hover:bg-white/90 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+                    >
+                      <span>Continue with {accountData.bankName || 'ICICI Bank'}</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
               </div>
             )}
 
             {currentStep === 2 && (
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-4">
-                    Account Details for {accountData.bankName}
-                  </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Account Details for {accountData.bankName}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Pre-filled with default demo account credentials
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="text-xs text-primary hover:underline flex items-center gap-1 font-medium cursor-pointer"
+                  >
+                    Change Bank
+                  </button>
                 </div>
 
                 {/* Booking Form Style */}
-                <div className="relative bg-muted/40 p-6 rounded-2xl">
+                <div className="relative bg-muted/40 p-6 rounded-2xl border border-white/10">
                   <div className="absolute left-8 top-20 bottom-20 w-px bg-border border-l border-dashed"></div>
                   
                   {/* Account Type */}
@@ -252,8 +313,11 @@ const AddBankAccount = () => {
                     </div>
                     <div className="flex-1">
                       <Label htmlFor="accountType" className="block text-sm font-semibold mb-2">Account Type *</Label>
-                      <Select onValueChange={(value) => handleInputChange('accountType', value)}>
-                        <SelectTrigger className="w-full h-12">
+                      <Select 
+                        value={accountData.accountType} 
+                        onValueChange={(value) => handleInputChange('accountType', value)}
+                      >
+                        <SelectTrigger className="w-full h-12 bg-background border border-border">
                           <SelectValue placeholder="Select account type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -315,7 +379,7 @@ const AddBankAccount = () => {
                   <button
                     type="submit" 
                     disabled={isLoading}
-                    className="w-full h-14 bg-white text-black rounded-2xl font-semibold hover:bg-white/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                    className="w-full h-14 bg-white text-black rounded-2xl font-semibold hover:bg-white/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 cursor-pointer shadow-lg"
                   >
                     {isLoading ? (
                       <>
@@ -333,7 +397,7 @@ const AddBankAccount = () => {
                   <button
                     type="button" 
                     onClick={handleSkip}
-                    className="w-full h-12 bg-transparent text-white border border-white/20 rounded-2xl font-semibold hover:bg-white/10 transition-all duration-200"
+                    className="w-full h-12 bg-transparent text-white border border-white/20 rounded-2xl font-semibold hover:bg-white/10 transition-all duration-200 cursor-pointer"
                   >
                     Skip for Now
                   </button>

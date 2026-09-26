@@ -17,9 +17,9 @@ const { v4: uuidv4 } = require('uuid');
  */
 const addBankAccount = async (req, res) => {
   try {
-    const { userid, bank_name, ifsc_code, account_type } = req.body;
+    const { userid, bank_name, ifsc_code, account_type, account_number } = req.body;
     
-    console.log('Add Bank Account - Received data:', { userid, bank_name, ifsc_code, account_type });
+    console.log('Add Bank Account - Received data:', { userid, bank_name, ifsc_code, account_type, account_number });
     console.log('Full request body:', req.body);
 
     // Validate required fields
@@ -56,70 +56,79 @@ const addBankAccount = async (req, res) => {
       });
     }
 
-    // Generate IDs for banking database
-    // Generate UUID for account_number (required by linkedbankaccounts schema)
-    const accountNumber = uuidv4();
-    // Generate 16-digit actual account number for banking database
-    const actualAccountNumber = Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
+    // Use provided account_number or generate a 16-digit account number
+    const actualAccountNumber = account_number || Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
     const customerId = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 1000);
     const accountId = customerId + Math.floor(Math.random() * 1000);
 
-    // Create customer and account in banking database first
+    // Check and create in banking database if not already present
     try {
-      // Create customer in banking database
-      const { data: customerData, error: customerError } = await bankingDb
-        .from('customers')
-        .insert([{
-          customer_id: customerId,
-          full_name: userExists.full_name || 'User',
-          email: '',
-          phone: '',
-          address: '',
-          dob: null,
-          aadhar_number: '',
-          pan_number: '',
-          credit_score: 0
-        }])
-        .select()
-        .single();
-
-      if (customerError) {
-        console.error('Error creating customer in banking DB:', customerError);
-        // Continue anyway, we'll still create the link
-      }
-
-      // Create bank account in banking database
-      const { data: bankAccountDataResult, error: bankAccountError } = await bankingDb
+      const { data: existingAccount } = await bankingDb
         .from('bank_accounts')
-        .insert([{
-          account_id: accountId,
-          account_number: actualAccountNumber,
-          customer_id: customerId,
-          account_type: account_type.toLowerCase(),
-          balance: 0,
-          currency: 'INR',
-          status: 'active',
-          bank_name: bank_name,
-          ifsc_code: ifsc_code.toUpperCase()
-        }])
-        .select()
-        .single();
+        .select('*')
+        .eq('account_number', actualAccountNumber)
+        .maybeSingle();
 
-      if (bankAccountError) {
-        console.error('Error creating bank account in banking DB:', bankAccountError);
-        // Continue anyway, we'll still create the link
-      } else {
+      if (!existingAccount) {
+        // Create customer in banking database
+        await bankingDb
+          .from('customers')
+          .insert([{
+            customer_id: customerId,
+            full_name: userExists.full_name || 'User',
+            email: '',
+            phone: '',
+            address: '',
+            dob: null,
+            aadhar_number: '',
+            pan_number: '',
+            credit_score: 0
+          }]);
+
+        // Create bank account in banking database
+        await bankingDb
+          .from('bank_accounts')
+          .insert([{
+            account_id: accountId,
+            account_number: actualAccountNumber,
+            customer_id: customerId,
+            account_type: account_type.toLowerCase(),
+            balance: 0,
+            currency: 'INR',
+            status: 'active',
+            bank_name: bank_name,
+            ifsc_code: ifsc_code.toUpperCase()
+          }]);
+
         console.log('✅ Successfully created bank account in banking database');
+      } else {
+        console.log('✅ Found existing bank account in banking database:', actualAccountNumber);
       }
     } catch (bankingDbError) {
       console.error('Error with banking database operations:', bankingDbError);
-      // Continue with app database operation
+    }
+
+    // Check if account is already linked to user
+    const { data: existingLink } = await appDb
+      .from('linkedbankaccounts')
+      .select('*')
+      .eq('user_id', userid)
+      .eq('account_number', actualAccountNumber)
+      .maybeSingle();
+
+    if (existingLink) {
+      console.log('✅ Account already linked for user:', actualAccountNumber);
+      return res.status(200).json({
+        success: true,
+        message: 'Bank account already linked successfully',
+        data: existingLink
+      });
     }
 
     // Prepare bank account data according to the schema
     const bankAccountData = {
       user_id: userid,
-      account_number: accountNumber,
+      account_number: actualAccountNumber,
       ifsc_code: ifsc_code.toUpperCase(),
       account_type: account_type.toLowerCase(),
       bank_name: bank_name
@@ -129,7 +138,7 @@ const addBankAccount = async (req, res) => {
     const { data: newAccount, error: insertError } = await appDb
       .from('linkedbankaccounts')
       .insert([bankAccountData])
-      .select()
+      .select();
 
     if (insertError) {
       console.error('Error inserting bank account:', insertError);
